@@ -1,7 +1,10 @@
 <template>
   <div id="app">
+    <div class="github">
+      <a href="https://github.com/xevrem/meteors"><i class="fa fa-github" aria-hidden="true"></i> </a>
+    </div>
     <div class="container">
-      <h1>Historical Recorded Meteor Landings</h1>
+      <h1 class="title">Historical Recorded Meteor Landings</h1>
       <svg class="chart" height="480" width="854"></svg>
     </div>
     <tool-tip :data="tt_data"/>
@@ -66,8 +69,9 @@ export default {
       this.map = chart.append('g')
         .append('path')
         .attr('d', path(this.geo))
-        .style('stroke', '#f88')
-        .style('fill', '#8f8');
+        .attr('class','geo-path')
+        // .style('stroke', '#f88')
+        // .style('fill', '#8f8');
 
       this.circles = chart.selectAll('.circles')
         .data(data.features)
@@ -92,11 +96,12 @@ export default {
         .attr('r', d => d.properties? mass(d.properties.mass):0)
         .style('fill', d=> color(d.properties?d.properties.mass:0))
         .style('stroke', '#ddd')
+        .style('stroke-width', 2)
         .on('mouseover', d =>{
           tooltip
             .style('display','inline-block')
             .style('left', d3.event.pageX + 'px')
-            .style('top', (d3.event.pageY - 80 )+ 'px');
+            .style('top', (d3.event.pageY - 90 )+ 'px');
 
           this.tt_data = d;
         })
@@ -124,21 +129,49 @@ export default {
       this.circles
         .selectAll('circle')
         .attr('r', d => d.properties? this.mass(d.properties.mass)/trans.k:0)
-        .style('stroke-width',1/trans.k);
+        .style('stroke-width',2/trans.k);
     }
   }
 }
 </script>
 
 <style lang="sass">
+body
+  background: linear-gradient(180deg, hsl(220,25,90), hsl(40,25,90)) no-repeat center center fixed
+
 #app
   font-family: 'Avenir', Helvetica, Arial, sans-serif
   -webkit-font-smoothing: antialiased
   -moz-osx-font-smoothing: grayscale
   text-align: center
 
-svg
-  border: 1px solid black
+.container
+  margin: 5% auto 0 auto
+  width: 875px
+  box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28)
+  background-color: #fff
+
+a
+  font-size: 40px
+  color: #88f
+  position: absolute
+  top: 5px
+  left: 5px
+
+.title
+  width: 100%
+  margin: 0
+  padding: 15px 0 15px 0
   background-color: #88f
+  color: #fff
+  box-shadow: 0 4px 8px rgba(0,0,0,.28)
+
+svg
+  margin: 10px
+  background-color: hsl(220,70,50)
+
+.geo-path
+  stroke: hsl(40,70,50)
+  fill: hsl(130,70,50)
 
 </style>
