@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="container">
-      <h1>hello world</h1>
+      <h1>Historical Recorded Meteor Landings</h1>
       <svg class="chart" height="480" width="854"></svg>
     </div>
     <tool-tip :data="tt_data"/>
@@ -20,6 +20,9 @@ export default {
     return {
       data: null,
       geo: null,
+      map: null,
+      circles: null,
+      mass: null,
       tt_data: {}
     }
   },
@@ -32,7 +35,7 @@ export default {
       console.log('DATA:', response.data);
       this.data = response.data;
 
-      response = await axios.get('http://enjalot.github.io/wwsd/data/world/world-110m.geojson');
+      response = await axios('src/world.json');
       this.geo = response.data;
 
       this.do_d3();
@@ -60,13 +63,13 @@ export default {
 
       // let url = 'http://enjalot.github.io/wwsd/data/world/world-110m.geojson';
 
-      let map = chart.append('g')
+      this.map = chart.append('g')
         .append('path')
         .attr('d', path(this.geo))
         .style('stroke', '#f88')
         .style('fill', '#8f8');
 
-      let circles = chart.selectAll('.circles')
+      this.circles = chart.selectAll('.circles')
         .data(data.features)
         .enter()
         .append('g')
@@ -77,12 +80,13 @@ export default {
         d3.max(data.features,d=>d.properties?d.properties.mass:0)])
         .range([0,5.0]);
 
+      this.mass = mass;
+
       let color = d3.scaleOrdinal(d3.schemeCategory10);
 
       let tooltip = d3.select('.tool-tip');
 
-
-      circles.append('circle')
+      this.circles.append('circle')
         .attr('cx', d => this.coords(proj,d,0))
         .attr('cy', d => this.coords(proj,d,1))
         .attr('r', d => d.properties? mass(d.properties.mass):0)
@@ -92,7 +96,7 @@ export default {
           tooltip
             .style('display','inline-block')
             .style('left', d3.event.pageX + 'px')
-            .style('top', (d3.event.pageY - 60 )+ 'px');
+            .style('top', (d3.event.pageY - 80 )+ 'px');
 
           this.tt_data = d;
         })
@@ -103,9 +107,24 @@ export default {
           this.tt_data = {};
         })
 
+      let zoom = d3.zoom()
+        .scaleExtent([1, 5])
+        .on('zoom', this.do_zoom);
+
+      chart.call(zoom);
     },
     coords(p, d, i){
       return d.geometry? p(d.geometry.coordinates)[i]:0
+    },
+    do_zoom(){
+      let trans = d3.event.transform
+      //console.log(trans);
+      this.map.attr('transform', trans);
+      this.circles.attr('transform', trans);
+      this.circles
+        .selectAll('circle')
+        .attr('r', d => d.properties? this.mass(d.properties.mass)/trans.k:0)
+        .style('stroke-width',1/trans.k);
     }
   }
 }

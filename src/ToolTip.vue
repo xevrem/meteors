@@ -2,7 +2,7 @@
   <div class="tool-tip">
     <p>name: {{data.properties?data.properties.name:''}}</p>
     <p>mass: {{data.properties?data.properties.mass:''}}</p>
-    <p></p>
+    <p>year: {{data.properties?new Date(data.properties.year).getFullYear():''}}</p>
   </div>
 </template>
 
